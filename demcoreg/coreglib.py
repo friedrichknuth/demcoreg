@@ -151,8 +151,8 @@ def compute_offset_ncc(dem1, dem2, pad=(9,9), prefilter=False, plot=False):
     #ref_noise = ref.mask * ref.std() * np.random.rand(*ref.shape) + ref.mean()
     #kernel_noise = kernel.mask * kernel.std() * np.random.rand(*kernel.shape) + kernel.mean()
     #This provides noise in proper range, but noise propagates to m, peak is in different locations!
-    #ref_noise = ref.mask * (ref.min() + ref.ptp() * np.random.rand(*ref.shape))
-    #kernel_noise = kernel.mask * (kernel.min() + kernel.ptp() * np.random.rand(*kernel.shape))
+    #ref_noise = ref.mask * (ref.min() + np.ptp(ref) * np.random.rand(*ref.shape))
+    #kernel_noise = kernel.mask * (kernel.min() + np.ptp(kernel) * np.random.rand(*kernel.shape))
 
     #This provides a proper normal distribution with mean=0 and std=1
     ref_noise = ref.mask * (np.random.randn(*ref.shape))
@@ -294,7 +294,7 @@ def compute_offset_nuth(dh, slope, aspect, min_count=100, remove_outliers=True, 
     
     #Not going to help if we have a step function between two plateaus, but better than nothing
     #Calculate bin aspect spread
-    bin_ptp = np.cos(np.radians(bin_centers)).ptp()
+    bin_ptp = np.ptp(np.cos(np.radians(bin_centers)))
     min_bin_ptp = 1.0 
 
     #Should iterate here, if not enough bins, increase bin width
@@ -334,7 +334,7 @@ def compute_offset_nuth(dh, slope, aspect, min_count=100, remove_outliers=True, 
             s=3
             #This is inefficient, but we have list of arrays with different length, need to filter
             #Reduntant with earlier filter, should refactor
-            bp = ax.boxplot(np.array(output)[idx][::s], positions=bin_centers[::s], widths=widths[::s], showfliers=False, \
+            bp = ax.boxplot(np.array(output,dtype=object)[idx][::s], positions=bin_centers[::s], widths=widths[::s], showfliers=False, \
                     patch_artist=True, boxprops=boxprops, whiskerprops=whiskerprops, capprops=capprops, \
                     medianprops=medianprops)
             bin_ticks = [0, 45, 90, 135, 180, 225, 270, 315, 360]
@@ -631,25 +631,28 @@ def plot_ct_at_dh_fits(f, ct_med, ct_smooth, at_med, at_smooth, clim_dh=None):
         
     """
     ax1 = plt.subplot(1,2,1)
-    ax1.plot(ct_med, np.arange(len(ct_med)), c='k', label='median correction')
-    ax1.plot(ct_smooth, np.arange(len(ct_med)), c='r', label='smooth Sav-Golay fit')
-    ax1.set_title('Row-wise correction')
+    ax1.plot(ct_med, np.arange(len(ct_med)), c='k', lw=0.5, label='median')
+    ax1.plot(ct_smooth, np.arange(len(ct_med)), c='r', lw=0.5, label='S-G filter')
+    ax1.set_title('Row median elevation difference')
     ax1.set_xlabel('Elevation difference (m)')
-    ax1.axvline(x=0, ls='--', alpha=0.6, c='teal')
+    ax1.axvline(x=0, lw=0.75, c='k')
     ax1.set_ylabel('Row number')
-    ax1.legend()
+    ax1.invert_yaxis()
+    ax1.grid()
+    #ax1.legend()
     
     ax2 = plt.subplot(1,2,2)
-    ax2.plot(np.arange(len(at_med)), at_med, c='k', label='median correction')
-    ax2.plot(np.arange(len(at_med)), at_smooth, c='r', label='smooth Sav-Golay fit')
-    ax2.axhline(y=0, ls='--', alpha=0.6, c='teal')
-    ax2.set_title('Column-wise correction')
+    ax2.plot(np.arange(len(at_med)), at_med, c='k', lw=0.5, label='median')
+    ax2.plot(np.arange(len(at_med)), at_smooth, c='r', lw=0.5, label='S-G filter')
+    ax2.axhline(y=0, lw=0.75, c='k')
+    ax2.set_title('Column median elevation difference')
     ax2.set_ylabel('Elevation difference (m)')
-    ax2.set_xlabel('Col number')
+    ax2.set_xlabel('Column number')
+    ax2.grid()
     ax2.legend()
     # make row col aspect equal
-    xlim2 = ax1.get_ylim()
-    ax2.set_xlim(xlim2)
+    #xlim2 = ax1.get_ylim()
+    #ax2.set_xlim(xlim2)
     
     # if yes, this will make elevation difference aspect equal
     if clim_dh is not None:
