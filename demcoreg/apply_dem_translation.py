@@ -36,6 +36,8 @@ def getparser():
     parser.add_argument('dem_fn', type=str, help='DEM filename')
     parser.add_argument('log_fn', type=str, help='pc_align log filename')
     parser.add_argument('-outdir', default=None, help='Output directory')
+    parser.add_argument('-invert', action="store_true", help='Invert the final pc_align translation, regardless of whether pc_align was run with --save-inv-transformed-reference-points')
+    parser.add_argument('-no_dz', action="store_true", help='Only apply horizontal components of translation, no vertical offset')
     return parser
 
 def main():
@@ -75,7 +77,7 @@ def main():
     #Need to extract from log to know how to compute translation
     #if ref is csv and src is dem, want to transform source_center + shift
     inv_trans = False 
-    #if ref is dem and src is csv, want to inverse transform ref by shift applied at (source_center - shift)
+    #if ref is dem and src is csv, want to invert transform ref by shift applied at (source_center - shift)
     #inv_trans_str = '--save-inv-transformed-reference-points'
     inv_trans_str = 'trans_reference: true'
 
@@ -140,7 +142,14 @@ def main():
 
     #out_fmt = "VRT"
     out_fmt = "TIF"
-    out_fn = os.path.join(outdir, os.path.split(os.path.splitext(dem_fn)[0])[1] + '_trans')
+    if args.invert:
+        proj_shift = -proj_shift
+        print("Applying inverse translation: ", proj_shift)
+    if args.no_dz:
+        shift_str = "dx%+0.2fm_dy%+0.2fm_dz%+0.2fm" % (proj_shift[0], proj_shift[1], 0)
+    else:  
+        shift_str = "dx%+0.2fm_dy%+0.2fm_dz%+0.2fm" % (proj_shift[0], proj_shift[1], proj_shift[2])
+    out_fn = os.path.splitext(dem_fn)[0] + f'_trans_{shift_str}'
     if out_fmt == "VRT": 
         print("Writing vrt with scaled values")
         dst_fn = out_fn+'.vrt'
@@ -152,10 +161,14 @@ def main():
         print("Copying input dataset")
         dst_ds = iolib.gtif_drv.CreateCopy(dst_fn, src_ds, 0, options=iolib.gdal_opt)
         #Apply vertical shift
-        dst_b = dst_ds.GetRasterBand(1)
-        print("Writing out z-shifted band")
-        dst_b.SetNoDataValue(float(src_ndv))
-        dst_b.WriteArray(np.around((src_a + proj_shift[2]).filled(src_ndv), decimals=3))
+        if not args.no_dz:
+            print("Will apply a vertical shift to the input raster")
+            dst_b = dst_ds.GetRasterBand(1)
+            print("Writing out z-shifted band")
+            dst_b.SetNoDataValue(float(src_ndv))
+            dst_b.WriteArray(np.around((src_a + proj_shift[2]).filled(src_ndv), decimals=3))
+        else:
+            print("User selected not to apply vertical shift, only applying horizontal shifts to raster")
 
     dst_gt = list(dst_ds.GetGeoTransform())
     #Apply horizontal shift directly to geotransform
