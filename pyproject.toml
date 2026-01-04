@@ -34,11 +34,17 @@ dependencies = [
 Homepage = "https://github.com/dshean/demcoreg"
 
 [project.scripts]
-pc_align_wrapper = "demcoreg.pc_align_wrapper:main"
-apply_dem_translation = "demcoreg.apply_dem_translation:main"
-compute_diff = "demcoreg.compute_diff:main"
-dem_align = "demcoreg.dem_align:main"
-dem_mask = "demcoreg.dem_mask:main"
+pc_align_wrapper.sh = "demcoreg.pc_align_wrapper:main"
+apply_dem_translation.py = "demcoreg.apply_dem_translation:main"
+compute_diff.py = "demcoreg.compute_diff:main"
+dem_align.py = "demcoreg.dem_align:main"
+dem_mask.py = "demcoreg.dem_mask:main"
+dem_coreg.sh = "demcoreg.dem_coreg:main"
+dem_coreg_all.sh = "demcoreg.dem_coreg_all:main"
+vol_stats.py = "demcoreg.vol_stats:main"
+robust_stats.py = "demcoreg.robust_stats:main"
+glas_proc.py = "demcoreg.glas_proc:main"
+filter_glas.py = "demcoreg.filter_glas:main"
 
 [tool.setuptools]
 packages = ["demcoreg"]
