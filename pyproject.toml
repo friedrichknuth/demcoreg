@@ -45,7 +45,7 @@ glas_proc = "demcoreg.glas_proc:main"
 filter_glas = "demcoreg.filter_glas:main"
 
 [tool.setuptools]
-packages = ["demcoreg"]
+packages = {find = {}}
 
 [tool.setuptools.package-data]
 demcoreg = ["*.sh"]
