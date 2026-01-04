@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "demcoreg"
+version = "1.1.2"
+description = "Utilities for DEM co-registration"
+authors = [
+    {name = "David Shean", email = "dshean@gmail.com"}
+]
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.8"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+
+dependencies = [
+    "numpy",
+    "gdal",
+    "pygeotools",
+    "wget",
+]
+
+[project.urls]
+Homepage = "https://github.com/dshean/demcoreg"
+
+[project.scripts]
+pc_align_wrapper = "demcoreg.pc_align_wrapper:main"
+apply_dem_translation = "demcoreg.apply_dem_translation:main"
+compute_diff = "demcoreg.compute_diff:main"
+dem_align = "demcoreg.dem_align:main"
+dem_mask = "demcoreg.dem_mask:main"
+
+[tool.setuptools]
+packages = ["demcoreg"]
+
+[tool.setuptools.package-data]
+demcoreg = ["*.sh"]
